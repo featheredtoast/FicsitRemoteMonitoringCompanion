@@ -50,5 +50,13 @@ var _ = Describe("DroneStationCollector", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(val).To(Equal(float64(30)))
 		})
+		It("sets the 'drone_port_round_trip_seconds' metric with the right labels", func() {
+			collector.Collect()
+
+			val, err := gaugeValue(exporter.DronePortRndTrip, "1", "home", "remote station", "100", "200", "-300")
+
+			Expect(err).ToNot(HaveOccurred())
+			Expect(val).To(Equal(float64(264)))
+		})
 	})
 })
