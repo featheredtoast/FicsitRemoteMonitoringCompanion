@@ -31,6 +31,9 @@ func NewFRMServerFake() *FRMServerFake {
 	mux.Handle("/getProdStats", http.HandlerFunc(getStatsHandler(&fake.productionData)))
 	mux.Handle("/getPower", http.HandlerFunc(getStatsHandler(&fake.powerData)))
 	mux.Handle("/getFactory", http.HandlerFunc(getStatsHandler(&fake.factoryBuildings)))
+	mux.Handle("/getDroneStation", http.HandlerFunc(getStatsHandler(&fake.droneData)))
+	mux.Handle("/getTrains", http.HandlerFunc(getStatsHandler(&fake.trainData)))
+	mux.Handle("/getVehicles", http.HandlerFunc(getStatsHandler(&fake.vehicleData)))
 
 	return fake
 }
