@@ -8,15 +8,16 @@ type TrainCollector struct {
 	FRMAddress string
 }
 
-type timeTable struct {
+type TimeTable struct {
 	StationName string `json:"StationName"`
 }
 type TrainDetails struct {
-	TrainName     string  `json:"TrainName"`
-	PowerConsumed float64 `json:"PowerConsumed"`
-	TrainStation  string  `json:"TrainStation"`
-	Derailed      bool    `json:"Derailed"`
-	Status        string  `json:"Status"` //"TS_SelfDriving",
+	TrainName     string    `json:"TrainName"`
+	PowerConsumed float64   `json:"PowerConsumed"`
+	TrainStation  string    `json:"TrainStation"`
+	Derailed      bool      `json:"Derailed"`
+	Status        string    `json:"Status"` //"TS_SelfDriving",
+	TimeTable     []TimeTable `json:"TimeTable"`
 }
 
 func NewTrainCollector(frmAddress string) *TrainCollector {
