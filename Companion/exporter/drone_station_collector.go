@@ -41,6 +41,12 @@ type DroneStationDetails struct {
 	EstBatteryRate         float64  `json:"EstBatteryRate"`
 }
 
+func NewDroneStationCollector(frmAddress string) *DroneStationCollector {
+	return &DroneStationCollector{
+		FRMAddress: frmAddress,
+	}
+}
+
 func (c *DroneStationCollector) Collect() {
 	details := []DroneStationDetails{}
 	err := retrieveData(c.FRMAddress, &details)

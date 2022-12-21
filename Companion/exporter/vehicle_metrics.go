@@ -10,12 +10,14 @@ var (
 		Help: "Recorded vehicle round trip time in seconds",
 	}, []string{
 		"id",
+		"vehicle_type",
 	})
 	VehicleFuel = RegisterNewGaugeVec(prometheus.GaugeOpts{
 		Name: "vehicle_fuel",
 		Help: "Amount of fuel remaining",
 	}, []string{
 		"id",
+		"vehicle_type",
 		"fuel_type",
 	})
 )

@@ -32,6 +32,8 @@ func (c *VehicleCollector) Collect() {
 	}
 
 	for _, d := range details {
-		VehicleFuel.WithLabelValues(d.Id, d.FuelType).Set(d.FuelInventory)
+		VehicleFuel.WithLabelValues(d.Id, d.VehicleType, d.FuelType).Set(d.FuelInventory)
+
+		// TODO: round trip caluclations
 	}
 }

@@ -29,7 +29,7 @@ func (c *TrainCollector) Collect() {
 	details := []TrainDetails{}
 	err := retrieveData(c.FRMAddress, &details)
 	if err != nil {
-		log.Printf("error reading vehicle statistics from FRM: %s\n", err)
+		log.Printf("error reading train statistics from FRM: %s\n", err)
 		return
 	}
 

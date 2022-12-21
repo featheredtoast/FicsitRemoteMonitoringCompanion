@@ -12,6 +12,9 @@ type FRMServerFake struct {
 	productionData   []exporter.ProductionDetails
 	powerData        []exporter.PowerDetails
 	factoryBuildings []exporter.BuildingDetail
+	vehicleData      []exporter.VehicleDetails
+	trainData        []exporter.TrainDetails
+	droneData        []exporter.DroneStationDetails
 }
 
 func NewFRMServerFake() *FRMServerFake {
@@ -25,9 +28,9 @@ func NewFRMServerFake() *FRMServerFake {
 		server: server,
 	}
 
-	mux.Handle("/getProdStats", http.HandlerFunc(fake.productionStatsHandler))
-	mux.Handle("/getPower", http.HandlerFunc(fake.powerStatsHandler))
-	mux.Handle("/getFactory", http.HandlerFunc(fake.factoryBuildingsHandler))
+	mux.Handle("/getProdStats", http.HandlerFunc(getStatsHandler(&fake.productionData)))
+	mux.Handle("/getPower", http.HandlerFunc(getStatsHandler(&fake.powerData)))
+	mux.Handle("/getFactory", http.HandlerFunc(getStatsHandler(&fake.factoryBuildings)))
 
 	return fake
 }
@@ -66,35 +69,27 @@ func (e *FRMServerFake) ReturnsFactoryBuildings(data []exporter.BuildingDetail) 
 	e.factoryBuildings = data
 }
 
-func (e *FRMServerFake) productionStatsHandler(w http.ResponseWriter, r *http.Request) {
-	jsonBytes, err := json.Marshal(e.productionData)
-
-	if err != nil {
-		w.WriteHeader(500)
-		return
-	}
-
-	w.Write(jsonBytes)
+func (e *FRMServerFake) ReturnsVehicleData(data []exporter.VehicleDetails) {
+	e.vehicleData = data
 }
 
-func (e *FRMServerFake) powerStatsHandler(w http.ResponseWriter, r *http.Request) {
-	jsonBytes, err := json.Marshal(e.powerData)
-
-	if err != nil {
-		w.WriteHeader(500)
-		return
-	}
-
-	w.Write(jsonBytes)
+func (e *FRMServerFake) ReturnsTrainData(data []exporter.TrainDetails) {
+	e.trainData = data
 }
 
-func (e *FRMServerFake) factoryBuildingsHandler(w http.ResponseWriter, r *http.Request) {
-	jsonBytes, err := json.Marshal(e.factoryBuildings)
+func (e *FRMServerFake) ReturnsDroneStationData(data []exporter.DroneStationDetails) {
+	e.droneData = data
+}
 
-	if err != nil {
-		w.WriteHeader(500)
-		return
+func getStatsHandler(data any) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		jsonBytes, err := json.Marshal(data)
+
+		if err != nil {
+			w.WriteHeader(500)
+			return
+		}
+
+		w.Write(jsonBytes)
 	}
-
-	w.Write(jsonBytes)
 }
