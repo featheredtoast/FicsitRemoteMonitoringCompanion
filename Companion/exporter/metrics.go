@@ -47,7 +47,6 @@ var (
 		"item_name",
 	})
 
-
 	PowerConsumed = RegisterNewGaugeVec(prometheus.GaugeOpts{
 		Name: "power_consumed",
 		Help: "Power consumed on selected power circuit",

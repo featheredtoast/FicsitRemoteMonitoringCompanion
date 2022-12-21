@@ -9,10 +9,10 @@ import (
 )
 
 type PrometheusExporter struct {
-	server              *http.Server
-	ctx                 context.Context
-	cancel              context.CancelFunc
-	collectorRunner     *CollectorRunner
+	server          *http.Server
+	ctx             context.Context
+	cancel          context.CancelFunc
+	collectorRunner *CollectorRunner
 }
 
 func NewPrometheusExporter(frmApiHost string) *PrometheusExporter {
@@ -31,10 +31,10 @@ func NewPrometheusExporter(frmApiHost string) *PrometheusExporter {
 	collectorRunner := NewCollectorRunner(ctx, productionCollector, powerCollector, buildingCollector)
 
 	return &PrometheusExporter{
-		server:              server,
-		ctx:                 ctx,
-		cancel:              cancel,
-		collectorRunner:     collectorRunner,
+		server:          server,
+		ctx:             ctx,
+		cancel:          cancel,
+		collectorRunner: collectorRunner,
 	}
 }
 

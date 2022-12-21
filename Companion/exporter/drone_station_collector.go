@@ -33,8 +33,8 @@ type DroneStationDetails struct {
 	LatestIncStack         float64  `json:"LatestIncStack"`
 	LatestOutStack         float64  `json:"LatestOutStack"`
 	LatestRndTrip          string   `json:"LatestRndTrip"`
-	LatestTripIncAmt       int      `json:"LatestTripIncAmt"`
-	LatestTripOutAmt       int      `json:"LatestTripOutAmt"`
+	LatestTripIncAmt       float64  `json:"LatestTripIncAmt"`
+	LatestTripOutAmt       float64  `json:"LatestTripOutAmt"`
 	MedianRndTrip          string   `json:"MedianRndTrip"`
 	MedianTripIncAmt       float64  `json:"MedianTripIncAmt"`
 	MedianTripOutAmt       float64  `json:"MedianTripOutAmt"`
