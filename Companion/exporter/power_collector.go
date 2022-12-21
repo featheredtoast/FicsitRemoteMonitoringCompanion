@@ -4,17 +4,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"regexp"
-	"strings"
 	"strconv"
-	"time"
 )
 
 type PowerCollector struct {
 	FRMAddress string
 }
-
-var timeRegex = regexp.MustCompile(`\d\d:\d\d:\d\d`)
 
 type PowerDetails struct {
 	CircuitId           float64 `json:"CircuitID"`
@@ -27,17 +22,6 @@ type PowerDetails struct {
 	BatteryTimeEmpty    string  `json:"BatteryTimeEmpty"`
 	BatteryTimeFull     string  `json:"BatteryTimeFull"`
 	FuseTriggered       bool    `json:"FuseTriggered"`
-}
-
-func parseTimeSeconds(timeStr string) (bool, float64) {
-	match := timeRegex.FindStringSubmatch(timeStr)
-	if len(match) < 1 {
-		return false, 0
-	}
-	parts := strings.Split(match[0], ":")
-	duration := parts[0] + "h" + parts[1] + "m" + parts[2] + "s"
-	t, _ := time.ParseDuration(duration)
-	return true, t.Seconds()
 }
 
 func (pd *PowerDetails) parseBatteryTimeEmptySeconds() *float64 {
