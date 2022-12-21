@@ -24,13 +24,14 @@ func NewCollectorRunner(ctx context.Context, collectors ...Collector) *Collector
 	}
 }
 
+var AfterInterval = time.After
 func (c *CollectorRunner) Start() {
 	c.Collect()
 	for {
 		select {
 		case <-c.ctx.Done():
 			return
-		case <-time.After(5 * time.Second):
+		case <-AfterInterval(5 * time.Second):
 			c.Collect()
 		}
 	}

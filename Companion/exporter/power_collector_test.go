@@ -1,8 +1,6 @@
 package exporter_test
 
 import (
-	"context"
-
 	"github.com/AP-Hunt/FicsitRemoteMonitoringCompanion/m/v2/exporter"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -13,7 +11,7 @@ var _ = Describe("PowerCollector", func() {
 
 	BeforeEach(func() {
 		FRMServer.Reset()
-		collector = exporter.NewPowerCollector(context.Background(), "http://localhost:9080/getPower")
+		collector = exporter.NewPowerCollector("http://localhost:9080/getPower")
 
 		FRMServer.ReturnsPowerData([]exporter.PowerDetails{
 			{
