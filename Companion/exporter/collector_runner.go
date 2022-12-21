@@ -24,8 +24,6 @@ func NewCollectorRunner(ctx context.Context, collectors ...Collector) *Collector
 	}
 }
 
-var AfterInterval = time.After
-
 func (c *CollectorRunner) Start() {
 	c.Collect()
 	for {

@@ -10,6 +10,8 @@ import (
 )
 
 var timeRegex = regexp.MustCompile(`\d\d:\d\d:\d\d`)
+var AfterInterval = time.After
+var Now = time.Now
 
 func parseTimeSeconds(timeStr string) *float64 {
 	match := timeRegex.FindStringSubmatch(timeStr)
