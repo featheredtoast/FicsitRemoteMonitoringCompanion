@@ -1,9 +1,7 @@
 package exporter
 
 import (
-	"encoding/json"
 	"log"
-	"net/http"
 	"strconv"
 )
 
@@ -18,19 +16,8 @@ func NewFactoryBuildingCollector(frmAddress string) *FactoryBuildingCollector {
 }
 
 func (c *FactoryBuildingCollector) Collect() {
-	resp, err := http.Get(c.FRMAddress)
-
-	if err != nil {
-		log.Printf("error fetching factory buildings from FRM: %s\n", err)
-		return
-	}
-
-	defer resp.Body.Close()
-
 	details := []BuildingDetail{}
-	decoder := json.NewDecoder(resp.Body)
-
-	err = decoder.Decode(&details)
+	err := retrieveData(c.FRMAddress, &details)
 	if err != nil {
 		log.Printf("error reading factory buildings from FRM: %s\n", err)
 		return

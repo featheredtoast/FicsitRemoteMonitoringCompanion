@@ -1,18 +1,55 @@
 package exporter
+
 import (
+	"encoding/json"
+	"log"
+	"net/http"
 	"regexp"
 	"strings"
 	"time"
 )
 
 var timeRegex = regexp.MustCompile(`\d\d:\d\d:\d\d`)
-func parseTimeSeconds(timeStr string) (bool, float64) {
+
+func parseTimeSeconds(timeStr string) *float64 {
 	match := timeRegex.FindStringSubmatch(timeStr)
 	if len(match) < 1 {
-		return false, 0
+		return nil
 	}
 	parts := strings.Split(match[0], ":")
 	duration := parts[0] + "h" + parts[1] + "m" + parts[2] + "s"
 	t, _ := time.ParseDuration(duration)
-	return true, t.Seconds()
+	seconds := t.Seconds()
+	return &seconds
+}
+
+func parseBool(b bool) float64 {
+	if b {
+		return 1
+	} else {
+		return 0
+	}
+}
+
+func retrieveData(frmAddress string, details any) error {
+	resp, err := http.Get(frmAddress)
+
+	if err != nil {
+		log.Printf("error fetching statistics from FRM: %s\n", err)
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	decoder := json.NewDecoder(resp.Body)
+
+	err = decoder.Decode(&details)
+	return err
+}
+
+type Location struct {
+	X        float64 `json:"x"`
+	Y        float64 `json:"y"`
+	Z        float64 `json:"z"`
+	Rotation int     `json:"rotation"`
 }

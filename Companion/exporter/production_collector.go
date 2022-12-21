@@ -1,9 +1,7 @@
 package exporter
 
 import (
-	"encoding/json"
 	"log"
-	"net/http"
 	"regexp"
 	"strconv"
 )
@@ -85,19 +83,8 @@ func NewProductionCollector(frmAddress string) *ProductionCollector {
 }
 
 func (c *ProductionCollector) Collect() {
-	resp, err := http.Get(c.FRMAddress)
-
-	if err != nil {
-		log.Printf("error fetching production statistics from FRM: %s\n", err)
-		return
-	}
-
-	defer resp.Body.Close()
-
 	details := []ProductionDetails{}
-	decoder := json.NewDecoder(resp.Body)
-
-	err = decoder.Decode(&details)
+	err := retrieveData(c.FRMAddress, &details)
 	if err != nil {
 		log.Printf("error reading production statistics from FRM: %s\n", err)
 		return

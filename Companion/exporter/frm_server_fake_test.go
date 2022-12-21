@@ -49,21 +49,9 @@ func (e *FRMServerFake) Reset() {
 	e.productionData = nil
 	e.powerData = nil
 
-	exporter.ItemConsumptionCapacityPerMinute.Reset()
-	exporter.ItemConsumptionCapacityPercent.Reset()
-	exporter.ItemProductionCapacityPerMinute.Reset()
-	exporter.ItemProductionCapacityPercent.Reset()
-	exporter.ItemsConsumedPerMin.Reset()
-	exporter.ItemsProducedPerMin.Reset()
-	exporter.PowerConsumed.Reset()
-	exporter.PowerCapacity.Reset()
-	exporter.PowerMaxConsumed.Reset()
-	exporter.BatteryDifferential.Reset()
-	exporter.BatteryPercent.Reset()
-	exporter.BatteryCapacity.Reset()
-	exporter.BatterySecondsEmpty.Reset()
-	exporter.BatterySecondsFull.Reset()
-	exporter.FuseTriggered.Reset()
+	for _, metric := range exporter.RegisteredMetrics {
+		metric.Reset()
+	}
 }
 
 func (e *FRMServerFake) ReturnsProductionData(data []exporter.ProductionDetails) {
