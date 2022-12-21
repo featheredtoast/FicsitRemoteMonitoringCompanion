@@ -1,7 +1,6 @@
 package exporter
 
 import (
-	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -13,8 +12,6 @@ import (
 
 type PowerCollector struct {
 	FRMAddress string
-	ctx        context.Context
-	cancel     context.CancelFunc
 }
 
 var timeRegex = regexp.MustCompile(`\d\d:\d\d:\d\d`)
@@ -67,29 +64,10 @@ func (pd *PowerDetails) parseFuseTriggered() float64 {
 	}
 }
 
-func NewPowerCollector(ctx context.Context, frmAddress string) *PowerCollector {
-	ctx, cancel := context.WithCancel(ctx)
+func NewPowerCollector(frmAddress string) *PowerCollector {
 	return &PowerCollector{
 		FRMAddress: frmAddress,
-		ctx:        ctx,
-		cancel:     cancel,
 	}
-}
-
-func (c *PowerCollector) Start() {
-	c.Collect()
-	for {
-		select {
-		case <-c.ctx.Done():
-			return
-		case <-time.After(5 * time.Second):
-			c.Collect()
-		}
-	}
-}
-
-func (c *PowerCollector) Stop() {
-	c.cancel()
 }
 
 func (c *PowerCollector) Collect() {
