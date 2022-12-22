@@ -46,21 +46,21 @@ func (v *VehicleDetails) recordElapsedTime() {
 	now := Now()
 	tripSeconds := now.Sub(v.DepartTime).Seconds()
 	VehicleRoundTrip.WithLabelValues(v.Id, v.VehicleType, v.PathName).Set(tripSeconds)
-	v.Departed = false
 }
 
 func (d *VehicleDetails) handleTimingUpdates(trackedVehicles map[string]*VehicleDetails) {
 	if d.AutoPilot {
 		vehicle, exists := trackedVehicles[d.Id]
-		if exists && vehicle.Departed && vehicle.Location.isNearby(d.Location) && vehicle.Location.isSameDirection(d.Location) {
+		if exists && vehicle.Departed && vehicle.StartLocation.isNearby(d.Location) && vehicle.StartLocation.isSameDirection(d.Location) {
 			// vehicle arrived at a nearby location facing around the same way.
 			// record elapsed time.
 			vehicle.recordElapsedTime()
+			vehicle.Departed = false
 		} else if exists && !vehicle.Departed && !vehicle.StartLocation.isNearby(d.Location) {
 			// vehicle departed - start counter
 			vehicle.Departed = true
 			vehicle.DepartTime = Now()
-		} else if d.ForwardSpeed < 10 {
+		} else if !exists && d.ForwardSpeed < 10 {
 			// start tracking the vehicle at low speeds
 			d.StartLocation = d.Location
 			d.Departed = false
