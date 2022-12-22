@@ -115,6 +115,33 @@ var _ = Describe("VehicleCollector", func() {
 			Expect(val).To(Equal(float64(0)))
 
 			exporter.Now = func() time.Time {
+				d, _ := time.ParseDuration("70s")
+				return now.Add(d)
+			}
+			FRMServer.ReturnsVehicleData([]exporter.VehicleDetails{
+				{
+					Id:           "1",
+					VehicleType:  "Truck",
+					ForwardSpeed: 80,
+					Location: exporter.Location{
+						X:        1000,
+						Y:        2000,
+						Z:        300,
+						Rotation: 160,
+					},
+					AutoPilot:     true,
+					FuelType:      "Coal",
+					FuelInventory: 23,
+					PathName:      "Path",
+				},
+			})
+			//We are near but not facing the right way. Do not record this until we face near the right direction
+			collector.Collect()
+			val, err = gaugeValue(exporter.VehicleRoundTrip, "1", "Truck", "Path")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(val).To(Equal(float64(0)))
+
+			exporter.Now = func() time.Time {
 				d, _ := time.ParseDuration("90s")
 				return now.Add(d)
 			}
@@ -135,7 +162,7 @@ var _ = Describe("VehicleCollector", func() {
 					PathName:      "Path",
 				},
 			})
-			//Now we are back near enough to where we began recording, end recording
+			//Now we are back near enough to where we began recording, and facing near the same way end recording
 			collector.Collect()
 			val, err = gaugeValue(exporter.VehicleRoundTrip, "1", "Truck", "Path")
 			Expect(err).ToNot(HaveOccurred())

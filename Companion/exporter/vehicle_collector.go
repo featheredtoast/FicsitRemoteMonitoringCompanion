@@ -35,6 +35,12 @@ func (l *Location) isNearby(other Location) bool {
 	return dist <= 5000
 }
 
+// Calculates if this location is roughly facing the same way as another
+func (l *Location) isSameDirection(other Location) bool {
+	diff := math.Abs(float64(l.Rotation - other.Rotation))
+	return diff <= 45
+}
+
 func (v *VehicleDetails) recordElapsedTime() {
 	now := Now()
 	tripSeconds := now.Sub(v.Departed).Seconds()
@@ -45,8 +51,9 @@ func (v *VehicleDetails) recordElapsedTime() {
 func (d *VehicleDetails) handleTimingUpdates(trackedVehicles map[string]*VehicleDetails) {
 	if d.AutoPilot {
 		vehicle, exists := trackedVehicles[d.Id]
-		if exists && !vehicle.Departed.IsZero() && vehicle.Location.isNearby(d.Location) {
-			// vehicle arrived on location - record elapsed time
+		if exists && !vehicle.Departed.IsZero() && vehicle.Location.isNearby(d.Location) && vehicle.Location.isSameDirection(d.Location) {
+			// vehicle arrived at a nearby location facing around the same way.
+			// record elapsed time.
 			vehicle.recordElapsedTime()
 		} else if exists && !vehicle.StartLocation.isNearby(d.Location) {
 			// vehicle departed - start counter
