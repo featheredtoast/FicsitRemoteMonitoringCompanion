@@ -38,7 +38,7 @@ func (l *Location) isNearby(other Location) bool {
 // Calculates if this location is roughly facing the same way as another
 func (l *Location) isSameDirection(other Location) bool {
 	diff := math.Abs(float64(l.Rotation - other.Rotation))
-	return diff <= 45
+	return diff <= 90
 }
 
 func (v *VehicleDetails) recordElapsedTime() {
