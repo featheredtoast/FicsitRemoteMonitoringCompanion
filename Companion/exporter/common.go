@@ -2,6 +2,7 @@ package exporter
 
 import (
 	"encoding/json"
+	"github.com/benbjohnson/clock"
 	"log"
 	"net/http"
 	"regexp"
@@ -10,8 +11,8 @@ import (
 )
 
 var timeRegex = regexp.MustCompile(`\d\d:\d\d:\d\d`)
-var AfterInterval = time.After
-var Now = time.Now
+
+var Clock = clock.New()
 
 func parseTimeSeconds(timeStr string) *float64 {
 	match := timeRegex.FindStringSubmatch(timeStr)

@@ -35,7 +35,7 @@ func NewTrainCollector(frmAddress string) *TrainCollector {
 func (t *TrainDetails) markNextStation(d *TrainDetails) {
 	if t.TrainStation != d.TrainStation {
 		t.StationCounter = t.StationCounter + 1
-		now := Now()
+		now := Clock.Now()
 		tripSeconds := now.Sub(t.StationArrivalTimestamp).Seconds()
 		TrainSegmentTrip.WithLabelValues(t.TrainName, t.TrainStation, d.TrainStation).Set(tripSeconds)
 		if len(t.TimeTable) <= t.StationCounter {
@@ -52,8 +52,8 @@ func (t *TrainDetails) markNextStation(d *TrainDetails) {
 func (t *TrainDetails) markFirstStation(d *TrainDetails) {
 	if t.TrainStation != d.TrainStation {
 		t.StationCounter = 0
-		t.FirstStationArrivalTimestamp = Now()
-		t.StationArrivalTimestamp = Now()
+		t.FirstStationArrivalTimestamp = Clock.Now()
+		t.StationArrivalTimestamp = Clock.Now()
 		t.TrainStation = d.TrainStation
 	}
 }

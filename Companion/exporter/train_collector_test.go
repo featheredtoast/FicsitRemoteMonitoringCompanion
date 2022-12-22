@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"time"
+	"github.com/benbjohnson/clock"
 )
 
 func updateTrain(station string) {
@@ -33,13 +34,6 @@ func updateTrain(station string) {
 			},
 		},
 	})
-}
-
-func advanceTime(now time.Time, increment time.Duration) time.Time {
-	exporter.Now = func() time.Time {
-		return now.Add(increment)
-	}
-	return now.Add(increment)
 }
 
 var _ = Describe("TrainCollector", func() {
@@ -94,11 +88,8 @@ var _ = Describe("TrainCollector", func() {
 		})
 		It("sets the 'train_round_trip_seconds' and 'train_segment_trip_seconds' metric with the right labels", func() {
 
-			now, _ := time.Parse(time.RFC3339, "2022-12-21T15:04:05Z")
-			increment, _ := time.ParseDuration("5s")
-			exporter.Now = func() time.Time {
-				return now
-			}
+			testTime := clock.NewMock()
+			exporter.Clock = testTime
 			updateTrain("First")
 
 			collector.Collect()
@@ -108,19 +99,11 @@ var _ = Describe("TrainCollector", func() {
 			val, err = gaugeValue(exporter.TrainSegmentTrip, "Train1", "First", "Second")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(val).To(Equal(float64(0)))
-			now = advanceTime(now, increment)
+			testTime.Add(5 * time.Second)
 			collector.Collect()
 			val, err = gaugeValue(exporter.TrainSegmentTrip, "Train1", "First", "Second")
 			Expect(val).To(Equal(float64(0)))
-			now = advanceTime(now, increment)
-			collector.Collect()
-			now = advanceTime(now, increment)
-			collector.Collect()
-			now = advanceTime(now, increment)
-			collector.Collect()
-			now = advanceTime(now, increment)
-			collector.Collect()
-			now = advanceTime(now, increment)
+			testTime.Add(25 * time.Second)
 
 			// Start timing the trains here - No metrics yet because we just got our first "start" marker from the station change.
 			updateTrain("Second")
@@ -130,21 +113,15 @@ var _ = Describe("TrainCollector", func() {
 			val, err = gaugeValue(exporter.TrainSegmentTrip, "Train1", "First", "Second")
 			Expect(val).To(Equal(float64(0)))
 
-			now = advanceTime(now, increment)
+			testTime.Add(15 * time.Second)
 			collector.Collect()
-			now = advanceTime(now, increment)
-			collector.Collect()
-			now = advanceTime(now, increment)
-			collector.Collect()
-			now = advanceTime(now, increment)
-			collector.Collect()
-			now = advanceTime(now, increment)
+			testTime.Add(10 * time.Second)
 			collector.Collect()
 			// No stats again since train is still "en route"
 			val, err = gaugeValue(exporter.TrainSegmentTrip, "Train1", "First", "Second")
 			Expect(val).To(Equal(float64(0)))
 
-			now = advanceTime(now, increment)
+			testTime.Add(5 * time.Second)
 
 			// Train reaches third station - can record elapsed time between Second and Third station only
 			updateTrain("Third")
@@ -156,18 +133,7 @@ var _ = Describe("TrainCollector", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(val).To(Equal(float64(30)))
 
-			now = advanceTime(now, increment)
-			collector.Collect()
-			now = advanceTime(now, increment)
-			collector.Collect()
-			now = advanceTime(now, increment)
-			collector.Collect()
-			now = advanceTime(now, increment)
-			collector.Collect()
-			now = advanceTime(now, increment)
-			collector.Collect()
-			now = advanceTime(now, increment)
-
+			testTime.Add(30 * time.Second)
 			updateTrain("First")
 			collector.Collect()
 			val, err = gaugeValue(exporter.TrainRoundTrip, "Train1")
@@ -177,17 +143,7 @@ var _ = Describe("TrainCollector", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(val).To(Equal(float64(30)))
 
-			now = advanceTime(now, increment)
-			collector.Collect()
-			now = advanceTime(now, increment)
-			collector.Collect()
-			now = advanceTime(now, increment)
-			collector.Collect()
-			now = advanceTime(now, increment)
-			collector.Collect()
-			now = advanceTime(now, increment)
-			collector.Collect()
-			now = advanceTime(now, increment)
+			testTime.Add(30 * time.Second)
 			updateTrain("Second")
 			collector.Collect()
 

@@ -30,7 +30,7 @@ func (c *CollectorRunner) Start() {
 		select {
 		case <-c.ctx.Done():
 			return
-		case <-AfterInterval(5 * time.Second):
+		case <-Clock.After(5 * time.Second):
 			c.Collect()
 		}
 	}

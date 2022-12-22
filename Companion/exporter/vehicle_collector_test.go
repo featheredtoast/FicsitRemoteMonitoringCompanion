@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"time"
+	"github.com/benbjohnson/clock"
 )
 
 func updateLocation (x float64, y float64, rotation int) {
@@ -85,21 +86,15 @@ var _ = Describe("VehicleCollector", func() {
 
 		It("sets the 'vehicle_round_trip_seconds' metric with the right labels", func() {
 
-			now, _ := time.Parse(time.RFC3339, "2022-12-21T15:04:05Z")
-			exporter.Now = func() time.Time {
-				return now
-			}
+			testTime := clock.NewMock()
+			exporter.Clock = testTime
 			// truck will be too fast here, nothing recorded
 			collector.Collect()
 			val, err := gaugeValue(exporter.VehicleRoundTrip, "1", "Truck", "Path")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(val).To(Equal(float64(0)))
 
-			exporter.Now = func() time.Time {
-				d, _ := time.ParseDuration("30s")
-				return now.Add(d)
-			}
-
+			testTime.Add(30 * time.Second)
 			updateLocation(0,0,0)
 			// first time collecting stats, nothing yet but it does set start location to 0,0,0
 			collector.Collect()
@@ -107,10 +102,7 @@ var _ = Describe("VehicleCollector", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(val).To(Equal(float64(0)))
 
-			exporter.Now = func() time.Time {
-				d, _ := time.ParseDuration("60s")
-				return now.Add(d)
-			}
+			testTime.Add(30 * time.Second)
 			updateLocation(8000, 2000, 0)
 			//go to a far away location now, star the timer
 			collector.Collect()
@@ -118,10 +110,7 @@ var _ = Describe("VehicleCollector", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(val).To(Equal(float64(0)))
 
-			exporter.Now = func() time.Time {
-				d, _ := time.ParseDuration("70s")
-				return now.Add(d)
-			}
+			testTime.Add(10 * time.Second)
 			updateLocation(1000, 2000, 180)
 			//We are near but not facing the right way. Do not record this until we face near the right direction
 			collector.Collect()
@@ -129,10 +118,7 @@ var _ = Describe("VehicleCollector", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(val).To(Equal(float64(0)))
 
-			exporter.Now = func() time.Time {
-				d, _ := time.ParseDuration("90s")
-				return now.Add(d)
-			}
+			testTime.Add(20 * time.Second)
 			updateLocation(1000, 2000, 0)
 			//Now we are back near enough to where we began recording, and facing near the same way end recording
 			collector.Collect()

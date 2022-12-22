@@ -43,7 +43,7 @@ func (l *Location) isSameDirection(other Location) bool {
 }
 
 func (v *VehicleDetails) recordElapsedTime() {
-	now := Now()
+	now := Clock.Now()
 	tripSeconds := now.Sub(v.DepartTime).Seconds()
 	VehicleRoundTrip.WithLabelValues(v.Id, v.VehicleType, v.PathName).Set(tripSeconds)
 }
@@ -59,17 +59,17 @@ func (d *VehicleDetails) handleTimingUpdates(trackedVehicles map[string]*Vehicle
 		} else if exists && !vehicle.Departed && !vehicle.StartLocation.isNearby(d.Location) {
 			// vehicle departed - start counter
 			vehicle.Departed = true
-			vehicle.DepartTime = Now()
+			vehicle.DepartTime = Clock.Now()
 		} else if !exists && d.ForwardSpeed < 10 {
 			// start tracking the vehicle at low speeds
 
 			trackedVehicle := VehicleDetails{
-				Id: d.Id,
-				Location: d.Location,
+				Id:            d.Id,
+				Location:      d.Location,
 				StartLocation: d.Location,
-				VehicleType: d.VehicleType,
-				PathName: d.PathName,
-				Departed: false,
+				VehicleType:   d.VehicleType,
+				PathName:      d.PathName,
+				Departed:      false,
 			}
 			trackedVehicles[d.Id] = &trackedVehicle
 		}
