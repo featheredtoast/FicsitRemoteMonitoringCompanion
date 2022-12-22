@@ -63,6 +63,7 @@ func (d *VehicleDetails) handleTimingUpdates(trackedVehicles map[string]*Vehicle
 		} else if d.ForwardSpeed < 10 {
 			// start tracking the vehicle at low speeds
 			d.StartLocation = d.Location
+			d.Departed = false
 			trackedVehicles[d.Id] = d
 		}
 	} else {
