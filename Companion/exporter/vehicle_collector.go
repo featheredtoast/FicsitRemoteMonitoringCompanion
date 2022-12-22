@@ -27,31 +27,44 @@ func (v *VehicleDetails) recordElapsedTime() {
 	now := Clock.Now()
 	tripSeconds := now.Sub(v.DepartTime).Seconds()
 	VehicleRoundTrip.WithLabelValues(v.Id, v.VehicleType, v.PathName).Set(tripSeconds)
+	v.Departed = false
+}
+
+func (v *VehicleDetails) isCompletingTrip(updatedLocation Location) bool {
+	// vehicle near first tracked location facing roughly the same way
+	return v.Departed && v.Location.isNearby(updatedLocation) && v.Location.isSameDirection(updatedLocation)
+}
+
+func (v *VehicleDetails) isStartingTrip(updatedLocation Location) bool {
+	// vehicle departed from first tracked location
+	return !v.Departed && !v.Location.isNearby(updatedLocation)
+}
+
+func (v *VehicleDetails) beginTracking(trackedVehicles map[string]*VehicleDetails) {
+	// Only start tracking the vehicle at low speeds so it's
+	// likely at a station or somewhere easier to track.
+	if v.ForwardSpeed < 10 {
+		trackedVehicle := VehicleDetails{
+			Id:          v.Id,
+			Location:    v.Location,
+			VehicleType: v.VehicleType,
+			PathName:    v.PathName,
+			Departed:    false,
+		}
+		trackedVehicles[v.Id] = &trackedVehicle
+	}
 }
 
 func (d *VehicleDetails) handleTimingUpdates(trackedVehicles map[string]*VehicleDetails) {
 	if d.AutoPilot {
 		vehicle, exists := trackedVehicles[d.Id]
-		if exists && vehicle.Departed && vehicle.Location.isNearby(d.Location) && vehicle.Location.isSameDirection(d.Location) {
-			// vehicle near first tracked location facing roughly the same way
-			// record elapsed time.
+		if exists && vehicle.isCompletingTrip(d.Location) {
 			vehicle.recordElapsedTime()
-			vehicle.Departed = false
-		} else if exists && !vehicle.Departed && !vehicle.Location.isNearby(d.Location) {
-			// vehicle departed from first tracked location - start counter
+		} else if exists && vehicle.isStartingTrip(d.Location) {
 			vehicle.Departed = true
 			vehicle.DepartTime = Clock.Now()
-		} else if !exists && d.ForwardSpeed < 10 {
-			// start tracking the vehicle at low speeds
-
-			trackedVehicle := VehicleDetails{
-				Id:          d.Id,
-				Location:    d.Location,
-				VehicleType: d.VehicleType,
-				PathName:    d.PathName,
-				Departed:    false,
-			}
-			trackedVehicles[d.Id] = &trackedVehicle
+		} else if !exists {
+			d.beginTracking(trackedVehicles)
 		}
 	} else {
 		//remove manual vehicles, nothing to mark
