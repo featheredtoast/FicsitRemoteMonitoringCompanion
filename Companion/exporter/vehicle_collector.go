@@ -2,7 +2,6 @@ package exporter
 
 import (
 	"log"
-	"math"
 	"time"
 )
 
@@ -23,23 +22,6 @@ type VehicleDetails struct {
 	StartLocation Location
 	DepartTime    time.Time
 	Departed      bool
-}
-
-// Calculates if a location is nearby another.
-// From observation, 5000 units is "good enough" to be considered nearby.
-func (l *Location) isNearby(other Location) bool {
-	x := l.X - other.X
-	y := l.Y - other.Y
-	z := l.Z - other.Z
-
-	dist := math.Sqrt(math.Pow(x, 2) + math.Pow(y, 2) + math.Pow(z, 2))
-	return dist <= 5000
-}
-
-// Calculates if this location is roughly facing the same way as another
-func (l *Location) isSameDirection(other Location) bool {
-	diff := math.Abs(float64(l.Rotation - other.Rotation))
-	return diff <= 90
 }
 
 func (v *VehicleDetails) recordElapsedTime() {
@@ -65,7 +47,6 @@ func (d *VehicleDetails) handleTimingUpdates(trackedVehicles map[string]*Vehicle
 
 			trackedVehicle := VehicleDetails{
 				Id:            d.Id,
-				Location:      d.Location,
 				StartLocation: d.Location,
 				VehicleType:   d.VehicleType,
 				PathName:      d.PathName,

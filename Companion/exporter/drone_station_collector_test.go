@@ -15,7 +15,7 @@ var _ = Describe("DroneStationCollector", func() {
 
 		FRMServer.ReturnsDroneStationData([]exporter.DroneStationDetails{
 			{
-				Id: "1",
+				Id:               "1",
 				HomeStation:      "home",
 				PairedStation:    "remote station",
 				DroneStatus:      "EDS_EN_ROUTE",

@@ -68,10 +68,10 @@ func (d *TrainDetails) handleTimingUpdates(trackedTrains map[string]*TrainDetail
 			train.markFirstStation(d)
 		} else if !exists {
 			trackedTrain := TrainDetails{
-				TrainName: d.TrainName,
-				TrainStation: d.TrainStation,
+				TrainName:      d.TrainName,
+				TrainStation:   d.TrainStation,
 				StationCounter: 0,
-				TimeTable: d.TimeTable,
+				TimeTable:      d.TimeTable,
 			}
 			trackedTrains[d.TrainName] = &trackedTrain
 		}

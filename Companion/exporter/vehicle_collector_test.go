@@ -5,11 +5,11 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"time"
 	"github.com/benbjohnson/clock"
+	"time"
 )
 
-func updateLocation (x float64, y float64, rotation int) {
+func updateLocation(x float64, y float64, rotation int) {
 	FRMServer.ReturnsVehicleData([]exporter.VehicleDetails{
 		{
 			Id:           "1",
@@ -95,7 +95,7 @@ var _ = Describe("VehicleCollector", func() {
 			Expect(val).To(Equal(float64(0)))
 
 			testTime.Add(30 * time.Second)
-			updateLocation(0,0,0)
+			updateLocation(0, 0, 0)
 			// first time collecting stats, nothing yet but it does set start location to 0,0,0
 			collector.Collect()
 			val, err = gaugeValue(exporter.VehicleRoundTrip, "1", "Truck", "Path")

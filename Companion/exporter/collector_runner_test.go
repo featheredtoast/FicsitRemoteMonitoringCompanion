@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/AP-Hunt/FicsitRemoteMonitoringCompanion/m/v2/exporter"
+	"github.com/benbjohnson/clock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"time"
-	"github.com/benbjohnson/clock"
 )
 
 type TestCollector struct {

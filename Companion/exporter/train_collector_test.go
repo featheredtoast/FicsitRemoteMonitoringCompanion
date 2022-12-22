@@ -5,8 +5,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"time"
 	"github.com/benbjohnson/clock"
+	"time"
 )
 
 func updateTrain(station string) {
