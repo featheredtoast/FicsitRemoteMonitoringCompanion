@@ -21,7 +21,8 @@ type VehicleDetails struct {
 	FuelInventory float64  `json"FuelInventory"`
 	PathName      string   `json:"PathName"`
 	StartLocation Location
-	Departed      time.Time
+	DepartTime    time.Time
+	Departed      bool
 }
 
 // Calculates if a location is nearby another.
@@ -43,21 +44,22 @@ func (l *Location) isSameDirection(other Location) bool {
 
 func (v *VehicleDetails) recordElapsedTime() {
 	now := Now()
-	tripSeconds := now.Sub(v.Departed).Seconds()
+	tripSeconds := now.Sub(v.DepartTime).Seconds()
 	VehicleRoundTrip.WithLabelValues(v.Id, v.VehicleType, v.PathName).Set(tripSeconds)
-	v.Departed = time.UnixMilli(0)
+	v.Departed = false
 }
 
 func (d *VehicleDetails) handleTimingUpdates(trackedVehicles map[string]*VehicleDetails) {
 	if d.AutoPilot {
 		vehicle, exists := trackedVehicles[d.Id]
-		if exists && !vehicle.Departed.IsZero() && vehicle.Location.isNearby(d.Location) && vehicle.Location.isSameDirection(d.Location) {
+		if exists && vehicle.Departed && vehicle.Location.isNearby(d.Location) && vehicle.Location.isSameDirection(d.Location) {
 			// vehicle arrived at a nearby location facing around the same way.
 			// record elapsed time.
 			vehicle.recordElapsedTime()
 		} else if exists && !vehicle.StartLocation.isNearby(d.Location) {
 			// vehicle departed - start counter
-			vehicle.Departed = Now()
+			vehicle.Departed = true
+			vehicle.DepartTime = Now()
 		} else if d.ForwardSpeed < 10 {
 			// start tracking the vehicle at low speeds
 			d.StartLocation = d.Location
