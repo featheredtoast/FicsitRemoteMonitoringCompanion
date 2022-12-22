@@ -16,12 +16,6 @@ var _ = Describe("DroneStationCollector", func() {
 		FRMServer.ReturnsDroneStationData([]exporter.DroneStationDetails{
 			{
 				Id: "1",
-				Location: exporter.Location{
-					X:        100,
-					Y:        200,
-					Z:        -300,
-					Rotation: 60,
-				},
 				HomeStation:      "home",
 				PairedStation:    "remote station",
 				DroneStatus:      "EDS_EN_ROUTE",
@@ -45,7 +39,7 @@ var _ = Describe("DroneStationCollector", func() {
 		It("sets the 'drone_port_battery_rate' metric with the right labels", func() {
 			collector.Collect()
 
-			val, err := gaugeValue(exporter.DronePortBatteryRate, "1", "home", "remote station", "100", "200", "-300")
+			val, err := gaugeValue(exporter.DronePortBatteryRate, "1", "home", "remote station")
 
 			Expect(err).ToNot(HaveOccurred())
 			Expect(val).To(Equal(float64(30)))
@@ -53,7 +47,7 @@ var _ = Describe("DroneStationCollector", func() {
 		It("sets the 'drone_port_round_trip_seconds' metric with the right labels", func() {
 			collector.Collect()
 
-			val, err := gaugeValue(exporter.DronePortRndTrip, "1", "home", "remote station", "100", "200", "-300")
+			val, err := gaugeValue(exporter.DronePortRndTrip, "1", "home", "remote station")
 
 			Expect(err).ToNot(HaveOccurred())
 			Expect(val).To(Equal(float64(264)))

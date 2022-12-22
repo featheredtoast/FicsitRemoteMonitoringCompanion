@@ -2,7 +2,6 @@ package exporter
 
 import (
 	"log"
-	"strconv"
 )
 
 type DroneStationCollector struct {
@@ -11,7 +10,6 @@ type DroneStationCollector struct {
 
 type DroneStationDetails struct {
 	Id                     string   `json:"ID"`
-	Location               Location `json:"location"`
 	HomeStation            string   `json:"HomeStation"`
 	PairedStation          string   `json:"PairedStation"`
 	DroneStatus            string   `json:"DroneStatus"`
@@ -58,15 +56,12 @@ func (c *DroneStationCollector) Collect() {
 		id := d.Id
 		home := d.HomeStation
 		paired := d.PairedStation
-		x := strconv.FormatFloat(d.Location.X, 'f', -1, 64)
-		y := strconv.FormatFloat(d.Location.Y, 'f', -1, 64)
-		z := strconv.FormatFloat(d.Location.Z, 'f', -1, 64)
 
-		DronePortBatteryRate.WithLabelValues(id, home, paired, x, y, z).Set(d.EstBatteryRate)
+		DronePortBatteryRate.WithLabelValues(id, home, paired).Set(d.EstBatteryRate)
 
 		roundTrip := parseTimeSeconds(d.LatestRndTrip)
 		if roundTrip != nil {
-			DronePortRndTrip.WithLabelValues(id, home, paired, x, y, z).Set(*roundTrip)
+			DronePortRndTrip.WithLabelValues(id, home, paired).Set(*roundTrip)
 		}
 	}
 }

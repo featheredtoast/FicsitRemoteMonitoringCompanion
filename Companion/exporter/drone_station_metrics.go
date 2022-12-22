@@ -12,9 +12,6 @@ var (
 		"id",
 		"home_station",
 		"paired_station",
-		"x",
-		"y",
-		"z",
 	})
 	DronePortRndTrip = RegisterNewGaugeVec(prometheus.GaugeOpts{
 		Name: "drone_port_round_trip_seconds",
@@ -23,8 +20,5 @@ var (
 		"id",
 		"home_station",
 		"paired_station",
-		"x",
-		"y",
-		"z",
 	})
 )
