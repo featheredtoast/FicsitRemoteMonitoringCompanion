@@ -25,6 +25,21 @@ func updateLocation (x float64, y float64, rotation int) {
 			FuelInventory: 23,
 			PathName:      "Path",
 		},
+		{
+			Id:           "2",
+			VehicleType:  "Truck",
+			ForwardSpeed: 0,
+			Location: exporter.Location{
+				X:        0,
+				Y:        0,
+				Z:        0,
+				Rotation: rotation,
+			},
+			AutoPilot:     false,
+			FuelType:      "Coal",
+			FuelInventory: 23,
+			PathName:      "no path",
+		},
 	})
 }
 

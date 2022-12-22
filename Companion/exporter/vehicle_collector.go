@@ -62,9 +62,16 @@ func (d *VehicleDetails) handleTimingUpdates(trackedVehicles map[string]*Vehicle
 			vehicle.DepartTime = Now()
 		} else if !exists && d.ForwardSpeed < 10 {
 			// start tracking the vehicle at low speeds
-			d.StartLocation = d.Location
-			d.Departed = false
-			trackedVehicles[d.Id] = d
+
+			trackedVehicle := VehicleDetails{
+				Id: d.Id,
+				Location: d.Location,
+				StartLocation: d.Location,
+				VehicleType: d.VehicleType,
+				PathName: d.PathName,
+				Departed: false,
+			}
+			trackedVehicles[d.Id] = &trackedVehicle
 		}
 	} else {
 		//remove manual vehicles, nothing to mark
@@ -93,7 +100,6 @@ func (c *VehicleCollector) Collect() {
 	for _, d := range details {
 		VehicleFuel.WithLabelValues(d.Id, d.VehicleType, d.FuelType).Set(d.FuelInventory)
 
-		// TODO: round trip caluclations
 		d.handleTimingUpdates(c.TrackedVehicles)
 	}
 }
