@@ -15,12 +15,12 @@ var _ = Describe("VehicleCollector", func() {
 
 		FRMServer.ReturnsVehicleData([]exporter.VehicleDetails{
 			{
-				Id: "1",
-				VehicleType: "Truck",
-				AutoPilot: true,
-				FuelType: "Coal",
+				Id:            "1",
+				VehicleType:   "Truck",
+				AutoPilot:     true,
+				FuelType:      "Coal",
 				FuelInventory: 23,
-				PathName: "Path",
+				PathName:      "Path",
 			},
 		})
 	})

@@ -60,7 +60,7 @@ var _ = Describe("TrainCollector", func() {
 		})
 		It("sets the 'train_round_trip_seconds' and 'train_segment_trip_seconds' metric with the right labels", func() {
 
-			now := time.Now()
+			now, _ := time.Parse(time.RFC3339, "2022-12-21T15:04:05Z")
 			exporter.Now = func() time.Time {
 				return now
 			}
@@ -93,11 +93,12 @@ var _ = Describe("TrainCollector", func() {
 				return now.Add(d)
 			}
 
+			// Start timing the trains here - No metrics yet because we just got our first "start" marker from the station change.
 			FRMServer.ReturnsTrainData([]exporter.TrainDetails{
 				{
 					TrainName:     "Train1",
 					PowerConsumed: 0,
-					TrainStation:  "First",
+					TrainStation:  "Second",
 					Derailed:      false,
 					Status:        "TS_SelfDriving",
 					TimeTable: []exporter.TimeTable{
@@ -121,34 +122,21 @@ var _ = Describe("TrainCollector", func() {
 				return now.Add(d)
 			}
 
-			FRMServer.ReturnsTrainData([]exporter.TrainDetails{
-				{
-					TrainName:     "Train1",
-					PowerConsumed: 0,
-					TrainStation:  "Second",
-					Derailed:      false,
-					Status:        "TS_SelfDriving",
-					TimeTable: []exporter.TimeTable{
-						{StationName: "First"},
-						{StationName: "Second"},
-						{StationName: "Third"},
-					},
-				},
-			})
-
+			// No stats again since train is still "en route"
 			collector.Collect()
 			val, err = gaugeValue(exporter.TrainRoundTrip, "Train1")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(val).To(Equal(float64(0)))
 			val, err = gaugeValue(exporter.TrainSegmentTrip, "Train1", "First", "Second")
 			Expect(err).ToNot(HaveOccurred())
-			Expect(val).To(Equal(float64(60)))
+			Expect(val).To(Equal(float64(0)))
 
 			exporter.Now = func() time.Time {
-				d, _ := time.ParseDuration("2m")
+				d, _ := time.ParseDuration("90s")
 				return now.Add(d)
 			}
 
+			// Train reaches third station - can record elapsed time between Second and Third station only
 			FRMServer.ReturnsTrainData([]exporter.TrainDetails{
 				{
 					TrainName:     "Train1",
@@ -173,9 +161,10 @@ var _ = Describe("TrainCollector", func() {
 			Expect(val).To(Equal(float64(60)))
 
 			exporter.Now = func() time.Time {
-				d, _ := time.ParseDuration("3m")
+				d, _ := time.ParseDuration("2m")
 				return now.Add(d)
 			}
+
 			FRMServer.ReturnsTrainData([]exporter.TrainDetails{
 				{
 					TrainName:     "Train1",
@@ -194,8 +183,35 @@ var _ = Describe("TrainCollector", func() {
 			collector.Collect()
 			val, err = gaugeValue(exporter.TrainRoundTrip, "Train1")
 			Expect(err).ToNot(HaveOccurred())
-			Expect(val).To(Equal(float64(180)))
+			Expect(val).To(Equal(float64(0)))
 			val, err = gaugeValue(exporter.TrainSegmentTrip, "Train1", "Third", "First")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(val).To(Equal(float64(30)))
+
+			exporter.Now = func() time.Time {
+				d, _ := time.ParseDuration("3m")
+				return now.Add(d)
+			}
+			FRMServer.ReturnsTrainData([]exporter.TrainDetails{
+				{
+					TrainName:     "Train1",
+					PowerConsumed: 0,
+					TrainStation:  "Second",
+					Derailed:      false,
+					Status:        "TS_SelfDriving",
+					TimeTable: []exporter.TimeTable{
+						{StationName: "First"},
+						{StationName: "Second"},
+						{StationName: "Third"},
+					},
+				},
+			})
+
+			collector.Collect()
+			val, err = gaugeValue(exporter.TrainRoundTrip, "Train1")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(val).To(Equal(float64(150)))
+			val, err = gaugeValue(exporter.TrainSegmentTrip, "Train1", "First", "Second")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(val).To(Equal(float64(60)))
 

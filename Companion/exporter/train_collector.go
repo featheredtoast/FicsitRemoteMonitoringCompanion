@@ -6,7 +6,8 @@ import (
 )
 
 type TrainCollector struct {
-	FRMAddress string
+	FRMAddress    string
+	TrackedTrains map[string]*TrainDetails
 }
 
 type TimeTable struct {
@@ -19,33 +20,31 @@ type TrainDetails struct {
 	Derailed                     bool        `json:"Derailed"`
 	Status                       string      `json:"Status"` //"TS_SelfDriving",
 	TimeTable                    []TimeTable `json:"TimeTable"`
-	StationArrivalTimestamp      *time.Time
+	StationArrivalTimestamp      time.Time
 	StationCounter               int
-	FirstStationArrivalTimestamp *time.Time
+	FirstStationArrivalTimestamp time.Time
 }
-
-var TrackedTrains map[string]*TrainDetails
 
 func NewTrainCollector(frmAddress string) *TrainCollector {
 	return &TrainCollector{
-		FRMAddress: frmAddress,
+		FRMAddress:    frmAddress,
+		TrackedTrains: make(map[string]*TrainDetails),
 	}
 }
 
 func (t *TrainDetails) markNextStation(d *TrainDetails) {
 	if t.TrainStation != d.TrainStation {
+		t.StationCounter = t.StationCounter + 1
 		now := Now()
-		tripSeconds := time.Since(*t.StationArrivalTimestamp).Seconds()
+		tripSeconds := now.Sub(t.StationArrivalTimestamp).Seconds()
 		TrainSegmentTrip.WithLabelValues(t.TrainName, t.TrainStation, d.TrainStation).Set(tripSeconds)
 		if len(t.TimeTable) <= t.StationCounter {
-			roundTripSeconds := time.Since(*t.FirstStationArrivalTimestamp).Seconds()
+			roundTripSeconds := now.Sub(t.FirstStationArrivalTimestamp).Seconds()
 			TrainRoundTrip.WithLabelValues(t.TrainName).Set(roundTripSeconds)
 			t.StationCounter = 0
-			t.FirstStationArrivalTimestamp = &now
-		} else {
-			t.StationCounter = t.StationCounter + 1
+			t.FirstStationArrivalTimestamp = now
 		}
-		t.StationArrivalTimestamp = &now
+		t.StationArrivalTimestamp = now
 		t.TrainStation = d.TrainStation
 	}
 }
@@ -53,39 +52,34 @@ func (t *TrainDetails) markNextStation(d *TrainDetails) {
 func (t *TrainDetails) markFirstStation(d *TrainDetails) {
 	if t.TrainStation != d.TrainStation {
 		t.StationCounter = 0
-		now := Now()
-		t.FirstStationArrivalTimestamp = &now
+		t.FirstStationArrivalTimestamp = Now()
+		t.StationArrivalTimestamp = Now()
 		t.TrainStation = d.TrainStation
 	}
 }
 
-func (t *TrainDetails) markFirstSeen() {
-	t.StationCounter = 0
-	TrackedTrains[t.TrainName] = t
-}
-
-func (d *TrainDetails) handleTimingUpdates() {
+func (d *TrainDetails) handleTimingUpdates(trackedTrains map[string]*TrainDetails) {
 	// add or update prev station and timestamp for automatic trains
 	if d.Status == "TS_SelfDriving" {
-		train, exists := TrackedTrains[d.TrainName]
-		if exists && train.FirstStationArrivalTimestamp != nil {
+		train, exists := trackedTrains[d.TrainName]
+		if exists && !train.FirstStationArrivalTimestamp.IsZero() {
 			train.markNextStation(d)
 		} else if exists {
 			train.markFirstStation(d)
 		} else {
-			d.markFirstSeen()
+			d.StationCounter = 0
+			trackedTrains[d.TrainName] = d
 		}
 	} else {
 		//remove manual trains, nothing to mark
-		_, exists := TrackedTrains[d.TrainName]
+		_, exists := trackedTrains[d.TrainName]
 		if exists {
-			delete(TrackedTrains, d.TrainName)
+			delete(trackedTrains, d.TrainName)
 		}
 	}
 }
 
 func (c *TrainCollector) Collect() {
-	TrackedTrains = make(map[string]*TrainDetails)
 	details := []TrainDetails{}
 	err := retrieveData(c.FRMAddress, &details)
 	if err != nil {
@@ -98,6 +92,7 @@ func (c *TrainCollector) Collect() {
 
 		isDerailed := parseBool(d.Derailed)
 		TrainDerailed.WithLabelValues(d.TrainName).Set(isDerailed)
-		d.handleTimingUpdates()
+
+		d.handleTimingUpdates(c.TrackedTrains)
 	}
 }
