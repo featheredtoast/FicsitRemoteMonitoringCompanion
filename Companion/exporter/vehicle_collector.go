@@ -40,7 +40,7 @@ func (v *VehicleDetails) isStartingTrip(updatedLocation Location) bool {
 	return !v.Departed && !v.Location.isNearby(updatedLocation)
 }
 
-func (v *VehicleDetails) beginTracking(trackedVehicles map[string]*VehicleDetails) {
+func (v *VehicleDetails) startTracking(trackedVehicles map[string]*VehicleDetails) {
 	// Only start tracking the vehicle at low speeds so it's
 	// likely at a station or somewhere easier to track.
 	if v.ForwardSpeed < 10 {
@@ -64,7 +64,7 @@ func (d *VehicleDetails) handleTimingUpdates(trackedVehicles map[string]*Vehicle
 			vehicle.Departed = true
 			vehicle.DepartTime = Clock.Now()
 		} else if !exists {
-			d.beginTracking(trackedVehicles)
+			d.startTracking(trackedVehicles)
 		}
 	} else {
 		//remove manual vehicles, nothing to mark
