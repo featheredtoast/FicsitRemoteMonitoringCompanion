@@ -19,7 +19,6 @@ type VehicleDetails struct {
 	FuelType      string   `json:"FuelType"`
 	FuelInventory float64  `json"FuelInventory"`
 	PathName      string   `json:"PathName"`
-	StartLocation Location
 	DepartTime    time.Time
 	Departed      bool
 }
@@ -33,13 +32,13 @@ func (v *VehicleDetails) recordElapsedTime() {
 func (d *VehicleDetails) handleTimingUpdates(trackedVehicles map[string]*VehicleDetails) {
 	if d.AutoPilot {
 		vehicle, exists := trackedVehicles[d.Id]
-		if exists && vehicle.Departed && vehicle.StartLocation.isNearby(d.Location) && vehicle.StartLocation.isSameDirection(d.Location) {
-			// vehicle arrived at a nearby location facing around the same way.
+		if exists && vehicle.Departed && vehicle.Location.isNearby(d.Location) && vehicle.Location.isSameDirection(d.Location) {
+			// vehicle near first tracked location facing roughly the same way
 			// record elapsed time.
 			vehicle.recordElapsedTime()
 			vehicle.Departed = false
-		} else if exists && !vehicle.Departed && !vehicle.StartLocation.isNearby(d.Location) {
-			// vehicle departed - start counter
+		} else if exists && !vehicle.Departed && !vehicle.Location.isNearby(d.Location) {
+			// vehicle departed from first tracked location - start counter
 			vehicle.Departed = true
 			vehicle.DepartTime = Clock.Now()
 		} else if !exists && d.ForwardSpeed < 10 {
@@ -47,7 +46,7 @@ func (d *VehicleDetails) handleTimingUpdates(trackedVehicles map[string]*Vehicle
 
 			trackedVehicle := VehicleDetails{
 				Id:            d.Id,
-				StartLocation: d.Location,
+				Location: d.Location,
 				VehicleType:   d.VehicleType,
 				PathName:      d.PathName,
 				Departed:      false,
