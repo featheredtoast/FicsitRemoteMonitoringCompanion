@@ -2,24 +2,73 @@ package exporter
 
 import (
 	"log"
+	"math"
+	"time"
 )
 
 type VehicleCollector struct {
-	FRMAddress string
+	FRMAddress      string
+	TrackedVehicles map[string]*VehicleDetails
 }
 
 type VehicleDetails struct {
-	Id            string  `json:"ID"`
-	VehicleType   string  `json:"VehicleType"`
-	AutoPilot     bool    `json:"AutoPilot"`
-	FuelType      string  `json:"FuelType"`
-	FuelInventory float64 `json"FuelInventory"`
-	PathName      string  `json:"PathName"`
+	Id            string   `json:"ID"`
+	VehicleType   string   `json:"VehicleType"`
+	Location      Location `json:"location"`
+	ForwardSpeed  float64  `json:"ForwardSpeed"`
+	AutoPilot     bool     `json:"AutoPilot"`
+	FuelType      string   `json:"FuelType"`
+	FuelInventory float64  `json"FuelInventory"`
+	PathName      string   `json:"PathName"`
+	StartLocation Location
+	Departed      time.Time
+}
+
+// Calculates if a location is nearby another.
+// From observation, 5000 units is "good enough" to be considered nearby.
+func (l *Location) isNearby(other Location) bool {
+	x := l.X - other.X
+	y := l.Y - other.Y
+	z := l.Z - other.Z
+
+	dist := math.Sqrt(math.Pow(x, 2) + math.Pow(y, 2) + math.Pow(z, 2))
+	return dist <= 5000
+}
+
+func (v *VehicleDetails) recordElapsedTime() {
+	now := Now()
+	tripSeconds := now.Sub(v.Departed).Seconds()
+	VehicleRoundTrip.WithLabelValues(v.Id, v.VehicleType, v.PathName).Set(tripSeconds)
+	v.Departed = time.UnixMilli(0)
+}
+
+func (d *VehicleDetails) handleTimingUpdates(trackedVehicles map[string]*VehicleDetails) {
+	if d.AutoPilot {
+		vehicle, exists := trackedVehicles[d.Id]
+		if exists && !vehicle.Departed.IsZero() && vehicle.Location.isNearby(d.Location) {
+			// vehicle arrived on location - record elapsed time
+			vehicle.recordElapsedTime()
+		} else if exists && !vehicle.StartLocation.isNearby(d.Location) {
+			// vehicle departed - start counter
+			vehicle.Departed = Now()
+		} else if d.ForwardSpeed < 10 {
+			// start tracking the vehicle at low speeds
+			d.StartLocation = d.Location
+			trackedVehicles[d.Id] = d
+		}
+	} else {
+		//remove manual vehicles, nothing to mark
+		_, exists := trackedVehicles[d.Id]
+		if exists {
+			delete(trackedVehicles, d.Id)
+		}
+	}
 }
 
 func NewVehicleCollector(frmAddress string) *VehicleCollector {
 	return &VehicleCollector{
-		FRMAddress: frmAddress,
+		FRMAddress:      frmAddress,
+		TrackedVehicles: make(map[string]*VehicleDetails),
 	}
 }
 
@@ -35,5 +84,6 @@ func (c *VehicleCollector) Collect() {
 		VehicleFuel.WithLabelValues(d.Id, d.VehicleType, d.FuelType).Set(d.FuelInventory)
 
 		// TODO: round trip caluclations
+		d.handleTimingUpdates(c.TrackedVehicles)
 	}
 }

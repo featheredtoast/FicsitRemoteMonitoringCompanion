@@ -11,6 +11,7 @@ var (
 	}, []string{
 		"id",
 		"vehicle_type",
+		"path_name",
 	})
 	VehicleFuel = RegisterNewGaugeVec(prometheus.GaugeOpts{
 		Name: "vehicle_fuel",
