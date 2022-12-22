@@ -22,6 +22,16 @@ func updateTrain(station string) {
 				{StationName: "Third"},
 			},
 		},
+		{
+			TrainName:     "Not In Use",
+			PowerConsumed: 0,
+			TrainStation:  "Offsite",
+			Derailed:      false,
+			Status:        "TS_Parked",
+			TimeTable: []exporter.TimeTable{
+				{StationName: "Offsite"},
+			},
+		},
 	})
 }
 
