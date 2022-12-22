@@ -45,11 +45,11 @@ func (d *VehicleDetails) handleTimingUpdates(trackedVehicles map[string]*Vehicle
 			// start tracking the vehicle at low speeds
 
 			trackedVehicle := VehicleDetails{
-				Id:            d.Id,
-				Location: d.Location,
-				VehicleType:   d.VehicleType,
-				PathName:      d.PathName,
-				Departed:      false,
+				Id:          d.Id,
+				Location:    d.Location,
+				VehicleType: d.VehicleType,
+				PathName:    d.PathName,
+				Departed:    false,
 			}
 			trackedVehicles[d.Id] = &trackedVehicle
 		}
