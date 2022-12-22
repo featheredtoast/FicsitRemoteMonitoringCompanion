@@ -56,7 +56,7 @@ func (d *VehicleDetails) handleTimingUpdates(trackedVehicles map[string]*Vehicle
 			// vehicle arrived at a nearby location facing around the same way.
 			// record elapsed time.
 			vehicle.recordElapsedTime()
-		} else if exists && !vehicle.StartLocation.isNearby(d.Location) {
+		} else if exists && !vehicle.Departed && !vehicle.StartLocation.isNearby(d.Location) {
 			// vehicle departed - start counter
 			vehicle.Departed = true
 			vehicle.DepartTime = Now()
