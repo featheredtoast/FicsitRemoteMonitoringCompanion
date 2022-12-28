@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func updateLocation(x float64, y float64, rotation int) {
+func updateLocation(x float64, y float64, rotation float64) {
 	FRMServer.ReturnsVehicleData([]exporter.VehicleDetails{
 		{
 			Id:           "1",
@@ -78,7 +78,7 @@ var _ = Describe("VehicleCollector", func() {
 		It("sets the 'vehicle_fuel' metric with the right labels", func() {
 			collector.Collect()
 
-			val, err := gaugeValue(exporter.VehicleFuel, "1", "Truck", "Coal")
+			val, err := gaugeValue(exporter.VehicleFuel, "1", "Truck", "Coal", "1000", "2000", "1000", "60")
 
 			Expect(err).ToNot(HaveOccurred())
 			Expect(val).To(Equal(float64(23)))

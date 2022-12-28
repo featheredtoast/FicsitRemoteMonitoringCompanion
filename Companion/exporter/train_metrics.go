@@ -30,5 +30,9 @@ var (
 		Help: "How much power train is consuming",
 	}, []string{
 		"name",
+		"x",
+		"y",
+		"z",
+		"rotation",
 	})
 )

@@ -47,9 +47,15 @@ var _ = Describe("TrainCollector", func() {
 			{
 				TrainName:     "Train1",
 				PowerConsumed: 67,
-				TrainStation:  "NextStation",
-				Derailed:      false,
-				Status:        "TS_SelfDriving",
+				Location: exporter.Location{
+					X:        0,
+					Y:        0,
+					Z:        0,
+					Rotation: 0,
+				},
+				TrainStation: "NextStation",
+				Derailed:     false,
+				Status:       "TS_SelfDriving",
 				TimeTable: []exporter.TimeTable{
 					{StationName: "First"},
 					{StationName: "Second"},
@@ -58,6 +64,12 @@ var _ = Describe("TrainCollector", func() {
 			{
 				TrainName:     "DerailedTrain",
 				PowerConsumed: 0,
+				Location: exporter.Location{
+					X:        0,
+					Y:        0,
+					Z:        0,
+					Rotation: 0,
+				},
 				TrainStation:  "NextStation",
 				Derailed:      true,
 				Status:        "Derailed",
@@ -82,7 +94,7 @@ var _ = Describe("TrainCollector", func() {
 		It("sets the 'train_power_consumed' metric with the right labels", func() {
 			collector.Collect()
 
-			val, err := gaugeValue(exporter.TrainPower, "Train1")
+			val, err := gaugeValue(exporter.TrainPower, "Train1", "0", "0", "0", "0")
 
 			Expect(err).ToNot(HaveOccurred())
 			Expect(val).To(Equal(float64(67)))

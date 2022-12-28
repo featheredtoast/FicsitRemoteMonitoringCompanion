@@ -20,5 +20,9 @@ var (
 		"id",
 		"vehicle_type",
 		"fuel_type",
+		"x",
+		"y",
+		"z",
+		"rotation",
 	})
 )

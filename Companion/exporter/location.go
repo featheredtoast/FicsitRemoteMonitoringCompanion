@@ -2,13 +2,14 @@ package exporter
 
 import (
 	"math"
+	"strconv"
 )
 
 type Location struct {
 	X        float64 `json:"x"`
 	Y        float64 `json:"y"`
 	Z        float64 `json:"z"`
-	Rotation int     `json:"rotation"`
+	Rotation float64 `json:"rotation"`
 }
 
 // Calculates if a location is nearby another.
@@ -26,4 +27,20 @@ func (l *Location) isNearby(other Location) bool {
 func (l *Location) isSameDirection(other Location) bool {
 	diff := math.Abs(float64(l.Rotation - other.Rotation))
 	return diff <= 90
+}
+
+func toString(f float64) string {
+	return strconv.FormatFloat(f, 'f', -1, 64)
+}
+func (l *Location) XString() string {
+	return toString(l.X)
+}
+func (l *Location) YString() string {
+	return toString(l.Y)
+}
+func (l *Location) ZString() string {
+	return toString(l.Z)
+}
+func (l *Location) RotationString() string {
+	return toString(l.Rotation)
 }

@@ -15,6 +15,7 @@ type TimeTable struct {
 }
 type TrainDetails struct {
 	TrainName        string      `json:"TrainName"`
+	Location         Location    `json:"location"`
 	PowerConsumed    float64     `json:"PowerConsumed"`
 	TrainStation     string      `json:"TrainStation"`
 	Derailed         bool        `json:"Derailed"`
@@ -105,7 +106,7 @@ func (c *TrainCollector) Collect() {
 	}
 
 	for _, d := range details {
-		TrainPower.WithLabelValues(d.TrainName).Set(d.PowerConsumed)
+		TrainPower.WithLabelValues(d.TrainName, d.Location.XString(), d.Location.YString(), d.Location.ZString(), d.Location.RotationString()).Set(d.PowerConsumed)
 
 		isDerailed := parseBool(d.Derailed)
 		TrainDerailed.WithLabelValues(d.TrainName).Set(isDerailed)
