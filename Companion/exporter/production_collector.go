@@ -33,12 +33,12 @@ func (c *ProductionCollector) Collect(frmAddress string, sessionName string) {
 	}
 
 	for _, d := range details {
-		ItemsProducedPerMin.WithLabelValues(d.ItemName, frmAddress, sessionName).Set(d.CurrentProduction)
-		ItemsConsumedPerMin.WithLabelValues(d.ItemName, frmAddress, sessionName).Set(d.CurrentConsumption)
+		GaugeWithLabelValues(ItemsProducedPerMin, d.ItemName, frmAddress, sessionName).Set(d.CurrentProduction)
+		GaugeWithLabelValues(ItemsConsumedPerMin, d.ItemName, frmAddress, sessionName).Set(d.CurrentConsumption)
 
-		ItemProductionCapacityPercent.WithLabelValues(d.ItemName, frmAddress, sessionName).Set(d.ProdPercent)
-		ItemConsumptionCapacityPercent.WithLabelValues(d.ItemName, frmAddress, sessionName).Set(d.ConsPercent)
-		ItemProductionCapacityPerMinute.WithLabelValues(d.ItemName, frmAddress, sessionName).Set(d.MaxProd)
-		ItemConsumptionCapacityPerMinute.WithLabelValues(d.ItemName, frmAddress, sessionName).Set(d.MaxConsumed)
+		GaugeWithLabelValues(ItemProductionCapacityPercent, d.ItemName, frmAddress, sessionName).Set(d.ProdPercent)
+		GaugeWithLabelValues(ItemConsumptionCapacityPercent, d.ItemName, frmAddress, sessionName).Set(d.ConsPercent)
+		GaugeWithLabelValues(ItemProductionCapacityPerMinute, d.ItemName, frmAddress, sessionName).Set(d.MaxProd)
+		GaugeWithLabelValues(ItemConsumptionCapacityPerMinute, d.ItemName, frmAddress, sessionName).Set(d.MaxConsumed)
 	}
 }

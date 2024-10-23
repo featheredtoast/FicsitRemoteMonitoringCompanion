@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -13,9 +14,10 @@ type PrometheusExporter struct {
 	ctx              context.Context
 	cancel           context.CancelFunc
 	collectorRunners []*CollectorRunner
+	metricsRegister  *RecordedMetricsRegister
 }
 
-func NewPrometheusExporter(frmApiHosts []string) *PrometheusExporter {
+func NewPrometheusExporter(frmApiHosts []string, staleTime time.Duration) *PrometheusExporter {
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
 
@@ -28,6 +30,8 @@ func NewPrometheusExporter(frmApiHosts []string) *PrometheusExporter {
 
 	collectorRunners := []*CollectorRunner{}
 
+	metricsRegister := NewRecordedMetricsRegister(ctx, staleTime)
+	MetricsRegister = metricsRegister
 	for _, frmApiHost := range frmApiHosts {
 		productionCollector := NewProductionCollector("/getProdStats")
 		powerCollector := NewPowerCollector("/getPower")
@@ -47,10 +51,12 @@ func NewPrometheusExporter(frmApiHosts []string) *PrometheusExporter {
 		ctx:              ctx,
 		cancel:           cancel,
 		collectorRunners: collectorRunners,
+		metricsRegister:  metricsRegister,
 	}
 }
 
 func (e *PrometheusExporter) Start() {
+	go e.metricsRegister.Start()
 	for _, collectorRunner := range e.collectorRunners {
 		go collectorRunner.Start()
 	}

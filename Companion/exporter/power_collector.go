@@ -42,22 +42,22 @@ func (c *PowerCollector) Collect(frmAddress string, sessionName string) {
 	}
 
 	for _, d := range details {
-		circuitId := strconv.FormatFloat(d.CircuitGroupId, 'f', -1, 64)
-		PowerConsumed.WithLabelValues(circuitId, frmAddress, sessionName).Set(d.PowerConsumed)
-		PowerCapacity.WithLabelValues(circuitId, frmAddress, sessionName).Set(d.PowerCapacity)
-		PowerMaxConsumed.WithLabelValues(circuitId, frmAddress, sessionName).Set(d.PowerMaxConsumed)
-		BatteryDifferential.WithLabelValues(circuitId, frmAddress, sessionName).Set(d.BatteryDifferential)
-		BatteryPercent.WithLabelValues(circuitId, frmAddress, sessionName).Set(d.BatteryPercent)
-		BatteryCapacity.WithLabelValues(circuitId, frmAddress, sessionName).Set(d.BatteryCapacity)
+		circuitGroupId := strconv.FormatFloat(d.CircuitGroupId, 'f', -1, 64)
+		GaugeWithLabelValues(PowerConsumed, circuitGroupId, frmAddress, sessionName).Set(d.PowerConsumed)
+		GaugeWithLabelValues(PowerCapacity, circuitGroupId, frmAddress, sessionName).Set(d.PowerCapacity)
+		GaugeWithLabelValues(PowerMaxConsumed, circuitGroupId, frmAddress, sessionName).Set(d.PowerMaxConsumed)
+		GaugeWithLabelValues(BatteryDifferential, circuitGroupId, frmAddress, sessionName).Set(d.BatteryDifferential)
+		GaugeWithLabelValues(BatteryPercent, circuitGroupId, frmAddress, sessionName).Set(d.BatteryPercent)
+		GaugeWithLabelValues(BatteryCapacity, circuitGroupId, frmAddress, sessionName).Set(d.BatteryCapacity)
 		batterySecondsRemaining := parseTimeSeconds(d.BatteryTimeEmpty)
 		if batterySecondsRemaining != nil {
-			BatterySecondsEmpty.WithLabelValues(circuitId, frmAddress, sessionName).Set(*batterySecondsRemaining)
+			GaugeWithLabelValues(BatterySecondsEmpty, circuitGroupId, frmAddress, sessionName).Set(*batterySecondsRemaining)
 		}
 		batterySecondsFull := parseTimeSeconds(d.BatteryTimeFull)
 		if batterySecondsFull != nil {
-			BatterySecondsFull.WithLabelValues(circuitId, frmAddress, sessionName).Set(*batterySecondsFull)
+			GaugeWithLabelValues(BatterySecondsFull, circuitGroupId, frmAddress, sessionName).Set(*batterySecondsFull)
 		}
 		fuseTriggered := parseBool(d.FuseTriggered)
-		FuseTriggered.WithLabelValues(circuitId, frmAddress, sessionName).Set(fuseTriggered)
+		GaugeWithLabelValues(FuseTriggered, circuitGroupId, frmAddress, sessionName).Set(fuseTriggered)
 	}
 }

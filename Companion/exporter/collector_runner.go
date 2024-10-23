@@ -3,6 +3,8 @@ package exporter
 import (
 	"context"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type CollectorRunner struct {
@@ -30,6 +32,11 @@ func NewCollectorRunner(ctx context.Context, frmBaseUrl string, collectors ...Co
 
 func (c *CollectorRunner) updateSessionName() {
 	//TODO: update session name
+	newSessionName := "default"
+	if newSessionName != c.sessionName {
+		MetricsRegister.DeletePartialMatch(prometheus.Labels{"url": c.frmBaseUrl, "session_name": c.sessionName})
+		c.sessionName = newSessionName
+	}
 }
 
 func (c *CollectorRunner) Start() {

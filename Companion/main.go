@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/AP-Hunt/FicsitRemoteMonitoringCompanion/Companion/exporter"
 	"github.com/AP-Hunt/FicsitRemoteMonitoringCompanion/Companion/prometheus"
@@ -59,6 +60,12 @@ func main() {
 	}
 	log.Default().SetOutput(logFile)
 
+	staleTime, err := time.ParseDuration(lookupEnvWithDefault("FRM_STALE_METRIC_TIME", "1h"))
+	if err != nil {
+		log.Printf("Error when parsing time duration, setting default of 1h.")
+		staleTime = time.Duration(time.Hour)
+	}
+
 	// Create exporter
 	frmUrls := []string{}
 	if frmHostnames == "" {
@@ -72,7 +79,7 @@ func main() {
 		}
 	}
 	var promExporter *exporter.PrometheusExporter
-	promExporter = exporter.NewPrometheusExporter(frmUrls)
+	promExporter = exporter.NewPrometheusExporter(frmUrls, staleTime)
 
 	var prom *prometheus.PrometheusWrapper
 	if !noProm {

@@ -81,10 +81,10 @@ func (c *TrainStationCollector) Collect(frmAddress string, sessionName string) {
 	}
 	for circuitId, powerConsumed := range powerInfo {
 		cid := strconv.FormatFloat(circuitId, 'f', -1, 64)
-		TrainStationPower.WithLabelValues(cid, frmAddress, sessionName).Set(powerConsumed)
+		GaugeWithLabelValues(TrainStationPower, cid, frmAddress, sessionName).Set(powerConsumed)
 	}
 	for circuitId, powerConsumed := range maxPowerInfo {
 		cid := strconv.FormatFloat(circuitId, 'f', -1, 64)
-		TrainStationPowerMax.WithLabelValues(cid, frmAddress, sessionName).Set(powerConsumed)
+		GaugeWithLabelValues(TrainStationPowerMax, cid, frmAddress, sessionName).Set(powerConsumed)
 	}
 }
