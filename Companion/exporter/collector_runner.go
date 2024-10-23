@@ -3,6 +3,8 @@ package exporter
 import (
 	"context"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type CollectorRunner struct {
@@ -24,12 +26,17 @@ func NewCollectorRunner(ctx context.Context, frmBaseUrl string, collectors ...Co
 		cancel:     cancel,
 		collectors: collectors,
 		frmBaseUrl: frmBaseUrl,
-		saveName: "default",
+		saveName:   "default",
 	}
 }
 
 func (c *CollectorRunner) updateSaveName() {
 	//TODO: update save name
+	newSaveName := "default"
+	if newSaveName != c.saveName {
+		MetricsRegister.DeletePartialMatch(prometheus.Labels{"url": c.frmBaseUrl, "save_name": c.saveName})
+		c.saveName = newSaveName
+	}
 }
 
 func (c *CollectorRunner) Start() {

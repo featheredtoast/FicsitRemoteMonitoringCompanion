@@ -61,9 +61,9 @@ func (c *DroneStationCollector) Collect(frmAddress string, saveName string) {
 		home := d.HomeStation
 		paired := d.PairedStation
 
-		DronePortBatteryRate.WithLabelValues(id, home, paired, frmAddress, saveName).Set(d.EstBatteryRate)
+		GaugeWithLabelValues(DronePortBatteryRate, id, home, paired, frmAddress, saveName).Set(d.EstBatteryRate)
 
-		DronePortRndTrip.WithLabelValues(id, home, paired, frmAddress, saveName).Set(d.LatestRndTrip)
+		GaugeWithLabelValues(DronePortRndTrip, id, home, paired, frmAddress, saveName).Set(d.LatestRndTrip)
 
 		val, ok := powerInfo[d.PowerInfo.CircuitGroupId]
 		if ok {
@@ -75,6 +75,6 @@ func (c *DroneStationCollector) Collect(frmAddress string, saveName string) {
 
 	for circuitId, powerConsumed := range powerInfo {
 		cid := strconv.FormatFloat(circuitId, 'f', -1, 64)
-		DronePortPower.WithLabelValues(cid, frmAddress, saveName).Set(powerConsumed)
+		GaugeWithLabelValues(DronePortPower, cid, frmAddress, saveName).Set(powerConsumed)
 	}
 }

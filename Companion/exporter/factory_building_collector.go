@@ -28,7 +28,8 @@ func (c *FactoryBuildingCollector) Collect(frmAddress string, saveName string) {
 	maxPowerInfo := map[float64]float64{}
 	for _, building := range details {
 		for _, prod := range building.Production {
-			MachineItemsProducedPerMin.WithLabelValues(
+			GaugeWithLabelValues(
+				MachineItemsProducedPerMin,
 				prod.Name,
 				building.Building,
 				strconv.FormatFloat(building.Location.X, 'f', -1, 64),
@@ -37,7 +38,8 @@ func (c *FactoryBuildingCollector) Collect(frmAddress string, saveName string) {
 				frmAddress, saveName,
 			).Set(prod.CurrentProd)
 
-			MachineItemsProducedEffiency.WithLabelValues(
+			GaugeWithLabelValues(
+				MachineItemsProducedEffiency,
 				prod.Name,
 				building.Building,
 				strconv.FormatFloat(building.Location.X, 'f', -1, 64),
@@ -89,10 +91,10 @@ func (c *FactoryBuildingCollector) Collect(frmAddress string, saveName string) {
 	}
 	for circuitId, powerConsumed := range powerInfo {
 		cid := strconv.FormatFloat(circuitId, 'f', -1, 64)
-		FactoryPower.WithLabelValues(cid, frmAddress, saveName).Set(powerConsumed)
+		GaugeWithLabelValues(FactoryPower, cid, frmAddress, saveName).Set(powerConsumed)
 	}
 	for circuitId, powerConsumed := range maxPowerInfo {
 		cid := strconv.FormatFloat(circuitId, 'f', -1, 64)
-		FactoryPowerMax.WithLabelValues(cid, frmAddress, saveName).Set(powerConsumed)
+		GaugeWithLabelValues(FactoryPowerMax, cid, frmAddress, saveName).Set(powerConsumed)
 	}
 }

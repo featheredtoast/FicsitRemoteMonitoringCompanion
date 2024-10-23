@@ -30,7 +30,7 @@ type Fuel struct {
 func (v *VehicleDetails) recordElapsedTime(frmAddress string, saveName string) {
 	now := Clock.Now()
 	tripSeconds := now.Sub(v.DepartTime).Seconds()
-	VehicleRoundTrip.WithLabelValues(v.Id, v.VehicleType, v.PathName, frmAddress, saveName).Set(tripSeconds)
+	GaugeWithLabelValues(VehicleRoundTrip, v.Id, v.VehicleType, v.PathName, frmAddress, saveName).Set(tripSeconds)
 	v.Departed = false
 }
 
@@ -96,7 +96,7 @@ func (c *VehicleCollector) Collect(frmAddress string, saveName string) {
 
 	for _, d := range details {
 		if len(d.Fuel) > 0 {
-			VehicleFuel.WithLabelValues(d.Id, d.VehicleType, d.Fuel[0].Name, frmAddress, saveName).Set(d.Fuel[0].Amount)
+			GaugeWithLabelValues(VehicleFuel, d.Id, d.VehicleType, d.Fuel[0].Name, frmAddress, saveName).Set(d.Fuel[0].Amount)
 		}
 
 		d.handleTimingUpdates(c.TrackedVehicles, frmAddress, saveName)

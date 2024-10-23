@@ -49,7 +49,7 @@ func NewTrainCollector(endpoint string, trackedStations *map[string]TrainStation
 func (t *TrainDetails) recordRoundTripTime(now time.Time, frmAddress string, saveName string) {
 	if len(t.TimeTable) <= t.StationCounter {
 		roundTripSeconds := now.Sub(t.FirstArrivalTime).Seconds()
-		TrainRoundTrip.WithLabelValues(t.TrainName, frmAddress, saveName).Set(roundTripSeconds)
+		GaugeWithLabelValues(TrainRoundTrip, t.TrainName, frmAddress, saveName).Set(roundTripSeconds)
 		t.StationCounter = 0
 		t.FirstArrivalTime = now
 	}
@@ -57,7 +57,7 @@ func (t *TrainDetails) recordRoundTripTime(now time.Time, frmAddress string, sav
 
 func (t *TrainDetails) recordSegmentTripTime(destination string, now time.Time, frmAddress string, saveName string) {
 	tripSeconds := now.Sub(t.ArrivalTime).Seconds()
-	TrainSegmentTrip.WithLabelValues(t.TrainName, t.TrainStation, destination, frmAddress, saveName).Set(tripSeconds)
+	GaugeWithLabelValues(TrainSegmentTrip, t.TrainName, t.TrainStation, destination, frmAddress, saveName).Set(tripSeconds)
 }
 
 func (t *TrainDetails) recordNextStation(d *TrainDetails, frmAddress string, saveName string) {
@@ -139,13 +139,13 @@ func (c *TrainCollector) Collect(frmAddress string, saveName string) {
 		trainPowerConsumed := d.PowerConsumed * locomotives
 		maxTrainPowerConsumed := MaxTrainPowerConsumption * locomotives
 
-		TrainPower.WithLabelValues(d.TrainName, frmAddress, saveName).Set(trainPowerConsumed)
-		TrainTotalMass.WithLabelValues(d.TrainName, frmAddress, saveName).Set(totalMass)
-		TrainPayloadMass.WithLabelValues(d.TrainName, frmAddress, saveName).Set(payloadMass)
-		TrainMaxPayloadMass.WithLabelValues(d.TrainName, frmAddress, saveName).Set(maxPayloadMass)
+		GaugeWithLabelValues(TrainPower, d.TrainName, frmAddress, saveName).Set(trainPowerConsumed)
+		GaugeWithLabelValues(TrainTotalMass, d.TrainName, frmAddress, saveName).Set(totalMass)
+		GaugeWithLabelValues(TrainPayloadMass, d.TrainName, frmAddress, saveName).Set(payloadMass)
+		GaugeWithLabelValues(TrainMaxPayloadMass, d.TrainName, frmAddress, saveName).Set(maxPayloadMass)
 
 		isDerailed := parseBool(d.Derailed)
-		TrainDerailed.WithLabelValues(d.TrainName, frmAddress, saveName).Set(isDerailed)
+		GaugeWithLabelValues(TrainDerailed, d.TrainName, frmAddress, saveName).Set(isDerailed)
 
 		d.handleTimingUpdates(c.TrackedTrains, frmAddress, saveName)
 
@@ -170,10 +170,10 @@ func (c *TrainCollector) Collect(frmAddress string, saveName string) {
 	}
 	for circuitGroupId, powerConsumed := range powerInfo {
 		cid := strconv.FormatFloat(circuitGroupId, 'f', -1, 64)
-		TrainCircuitPower.WithLabelValues(cid, frmAddress, saveName).Set(powerConsumed)
+		GaugeWithLabelValues(TrainCircuitPower, cid, frmAddress, saveName).Set(powerConsumed)
 	}
 	for circuitGroupId, powerConsumed := range maxPowerInfo {
 		cid := strconv.FormatFloat(circuitGroupId, 'f', -1, 64)
-		TrainCircuitPowerMax.WithLabelValues(cid, frmAddress, saveName).Set(powerConsumed)
+		GaugeWithLabelValues(TrainCircuitPowerMax, cid, frmAddress, saveName).Set(powerConsumed)
 	}
 }
