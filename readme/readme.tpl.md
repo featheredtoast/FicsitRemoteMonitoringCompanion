@@ -44,6 +44,7 @@ The [Prometheus metrics server](https://prometheus.io/) allows you to [explore t
 
 (&#42; Link goes to the address on your local system. If FRMC is not running, you will see an error)
 
+
 ### Env vars
 
 `FRM_HOST`: The host to the Ficsit Remote Monitoring server. EG: `172.17.0.1`.
