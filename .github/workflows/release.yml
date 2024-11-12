@@ -6,58 +6,60 @@
 # so that it doesn't get in to an endless loop
 # when a tagged commit gets pushed.
 on:
-    push:
-        tags:
-            # Tags that look like a semantic version
-            - "[0-9]+.[0-9]+.[0-9]+*"
-defaults:
-  run:
-    shell: powershell
+  push:
+    tags:
+      # Tags that look like a semantic version
+      - "[0-9]+.[0-9]+.[0-9]+*"
 name: Release new version
 jobs:
-    increment_minor_version:
-        name: Increment minor version
-        runs-on: windows-latest
-        steps:
-            - uses: actions/checkout@v2
-              with:
-                fetch-depth: 0
+  increment_minor_version:
+    env:
+      FRMC_VERSION: ${{ github.ref_name }}
+      GOOS: windows
+      GOARCH: amd64
+      PROMETHEUS_VERSION: 2.27.1
+    name: Increment minor version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '16'
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '>=1.22.0'
+      - name: Compile go release
+        working-directory: ./Companion
+        run: |
+          mkdir bin
+          run: go build -ldflags="-X 'main.Version=${FRMC_VERSION}'" ./... -o bin/Companion.exe
+      - name: download prometheus
+        working-directory: ./Companion/bin
+        run: |
+          curl -s -o prometheus.tar.gz -L https://github.com/prometheus/prometheus/releases/download/v${PROMETHEUS_VERSION}/prometheus-${PROMETHEUS_VERSION}.windows-amd64.tar.gz
+          tar -zxvf prometheus.tar.gz
+          mv prometheus-${PROMETHEUS_VERSION}.windows-amd64 prometheus
+          rm prometheus.tar.gz
+      - name: build map
+        working-directory: ./map
+        run: |
+          npm install
+          npm run compile
+          mkdir -p ../Companion/bin/map/
+          cp -Rf index.html map-16k.png vendor img js ../Companion/bin/map/
+      - name: Bundle release
+        run: |
+          cd Companion
+          zip -9 -y -r -q FicsitRemoteMonitoringCompanion-v${FRMC_VERSION}.zip ./bin/*
+      - name: Generate release notes
+        run: |
+          go install github.com/git-chglog/git-chglog/cmd/git-chglog@0.15.4
+          git-chglog -c "./.chglog/config.yml" -t "./.chglog/CHANGELOG.tpl.md" -o "ReleaseNotes.md" "${FRMC_VERSION}..${FRMC_VERSION}"
+          cat ReleaseNotes.md InstallationInstructions.md > ReleaseNotes.md
 
-            - uses: actions/setup-node@v2
-              with:
-                node-version: '16'
-            - uses: actions/setup-go@v2
-              with:
-                go-version: '^1.17'
-
-            - name: Set version
-              run: |
-                echo "NEW_VERSION=$(cat version.txt)" >> $env:GITHUB_ENV 
-
-            - name: Compile release
-              run: |
-                cd Companion
-                make release
-
-            - name: Generate release notes
-              run: |
-                make release-notes
-
-            - name: Create release
-              id: create_release
-              uses: actions/create-release@v1
-              env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              with:
-                tag_name: ${{ env.NEW_VERSION }}
-                release_name: "Version ${{ env.NEW_VERSION }}"
-                draft: false
-                prerelease: false
-                body_path: ReleaseNotes.md
-
-            - name: Upload assets
-              id: upload_assets
-              env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: |
-                gh release upload "${{ env.NEW_VERSION }}" "./Companion/FicsitRemoteMonitoringCompanion-v${{env.NEW_VERSION}}.zip"
+      - name: Upload assets
+        id: upload_assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${FRMC_VERSION}" --notes ReleaseNotes.md "./Companion/FicsitRemoteMonitoringCompanion-v${FRMC_VERSION}.zip"
